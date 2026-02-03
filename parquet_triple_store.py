@@ -134,49 +134,45 @@ class ParquetTripleStore(Store):
                 and (triple_pattern[1] is None or row["p"] == str(triple_pattern[1]))
                 and (triple_pattern[2] is None or row["o"] == str(triple_pattern[2]))
             ):
-                triple = (
-                    URIRef(row["s"]),
-                    URIRef(row["p"]),
-                    URIRef(row["o"]),
+                obj = (
+                    Literal(row["o"])
+                    if row.get("object_type") == "literal"
+                    else URIRef(row["o"])
                 )
+                triple = (URIRef(row["s"]), URIRef(row["p"]), obj)
                 yield triple
 
-    def query(self, query, initNs=None, initBindings=None, queryGraph=None, **kwargs):
-        """Execute SPARQL query - returns a Result object"""
-        # For rdflib compatibility, return a proper Result object
-        # Note: This is a simplified implementation
+    def query(
+        self, query, initBindings=None, initNs=None, queryGraph=None, DEBUG=False, **kwargs
+    ):
+        """Execute SPARQL query - returns a Result object (simplified)"""
+        # Note: This is a simplified implementation that returns all triples.
         from rdflib.query import Result
-        from rdflib.query import ResultRow
         from rdflib.term import Variable
 
-        # Handle both string query and Query object
-        if isinstance(query, str):
-            query_str = query
-        else:
-            query_str = str(query)
+        if self.triples_df is None:
+            self.load_all_graphs()
 
-        # Create a simple result object that works with rdflib
-        class SimpleResult(Result):
-            def __init__(self, store, query_str):
-                super().__init__(type_="SELECT")
-                self.store = store
-                self.query_str = query_str
+        result = Result(type_="SELECT")
+        result.vars = [Variable("s"), Variable("p"), Variable("o")]
+        result.bindings = []
 
-            def __iter__(self):
-                # For compatibility with rdflib, we return what triples exist
-                # This allows Graph.query() to work even if SPARQL parsing isn't complete
-                if (
-                    self.store.triples_df is not None
-                    and not self.store.triples_df.empty
-                ):
-                    for _, row in self.store.triples_df.iterrows():
-                        # Return just the triple as a Result-like object
-                        triple = (URIRef(row["s"]), URIRef(row["p"]), URIRef(row["o"]))
-                        # Return as a tuple that can be unpacked like a triple
-                        yield (triple, None)
-                return
+        if self.triples_df is not None and not self.triples_df.empty:
+            for _, row in self.triples_df.iterrows():
+                obj = (
+                    Literal(row["o"])
+                    if row.get("object_type") == "literal"
+                    else URIRef(row["o"])
+                )
+                result.bindings.append(
+                    {
+                        Variable("s"): URIRef(row["s"]),
+                        Variable("p"): URIRef(row["p"]),
+                        Variable("o"): obj,
+                    }
+                )
 
-        return SimpleResult(self, query_str)
+        return result
 
     def __len__(self, context=None):
         """Return the number of triples in the store"""
@@ -266,7 +262,7 @@ class ParquetTripleStore(Store):
 
     def export_to_turtle(self, filename: str = "output.ttl") -> str:
         """Export loaded triples to Turtle format"""
-        if self.triples_df.empty:
+        if self.triples_df is None or self.triples_df.empty:
             raise ValueError("No data to export")
 
         graph = self._dataframe_to_rdf(self.triples_df)
@@ -326,11 +322,12 @@ class ParquetTripleStoreWithIndex(ParquetTripleStore):
                 and (triple[1] is None or row["p"] == str(triple[1]))
                 and (triple[2] is None or row["o"] == str(triple[2]))
             ):
-                yield (
-                    URIRef(row["s"]),
-                    URIRef(row["p"]),
-                    URIRef(row["o"]),
+                obj = (
+                    Literal(row["o"])
+                    if row.get("object_type") == "literal"
+                    else URIRef(row["o"])
                 )
+                yield (URIRef(row["s"]), URIRef(row["p"]), obj)
 
     def _create_indexes(self):
         """Create indexes for faster queries"""
@@ -341,6 +338,8 @@ class ParquetTripleStoreWithIndex(ParquetTripleStore):
 
     def find_by_subject(self, subject_uri: str) -> pd.DataFrame:
         """Find all triples with a specific subject"""
+        if self.triples_df is None:
+            self.load_all_graphs()
         if self.subject_index is None:
             self._create_indexes()
 
@@ -348,6 +347,8 @@ class ParquetTripleStoreWithIndex(ParquetTripleStore):
 
     def find_by_predicate(self, predicate_uri: str) -> pd.DataFrame:
         """Find all triples with a specific predicate"""
+        if self.triples_df is None:
+            self.load_all_graphs()
         if self.predicate_index is None:
             self._create_indexes()
 

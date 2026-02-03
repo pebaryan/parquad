@@ -42,6 +42,7 @@ print(f"   Time: {rdf_time:.4f}s")
 
 # Test 3: Load all graphs from Parquet
 print("\n3. Loading all graphs from Parquet store...")
+start = time.time()
 parquet_store.load_all_graphs()
 load_time = time.time() - start
 print(f"   Time: {load_time:.4f}s")
