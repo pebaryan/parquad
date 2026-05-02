@@ -140,7 +140,7 @@ class ParquetTripleStore(Store):
                     else URIRef(row["o"])
                 )
                 triple = (URIRef(row["s"]), URIRef(row["p"]), obj)
-                yield triple
+                yield triple, context
 
     def query(
         self, query, initBindings=None, initNs=None, queryGraph=None, DEBUG=False, **kwargs
@@ -327,7 +327,7 @@ class ParquetTripleStoreWithIndex(ParquetTripleStore):
                     if row.get("object_type") == "literal"
                     else URIRef(row["o"])
                 )
-                yield (URIRef(row["s"]), URIRef(row["p"]), obj)
+                yield (URIRef(row["s"]), URIRef(row["p"]), obj), context
 
     def _create_indexes(self):
         """Create indexes for faster queries"""
