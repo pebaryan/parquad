@@ -34,6 +34,7 @@ dependencies = [
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
+    "ruff>=0.1",
 ]
 
 [project.urls]
@@ -45,6 +46,9 @@ packages = ["src/parquad"]
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
