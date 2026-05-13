@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Test script for ParquetTripleStore with rdflib Graph API"""
 
-from rdflib import Graph, URIRef, Literal, RDF, RDFS
-from rdflib.namespace import FOAF, XSD
+from rdflib import RDF, Graph, Literal, URIRef
+from rdflib.namespace import FOAF
+
 from parquad.store import ParquetTripleStore
 
 

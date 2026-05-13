@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Validate indexing functionality in ParquetTripleStore."""
 
-import time
 import sys
+import time
 
 sys.path.insert(0, str(__file__))
 
-from rdflib import Graph, URIRef
+from rdflib import URIRef
+
 from parquad.store import ParquetTripleStoreWithIndex
 
 
@@ -29,7 +30,7 @@ def test_indexing():
             o = URIRef(f"value_{i}")
             store.add((s, p, o))
 
-        print(f"   Created 1000 triples")
+        print("   Created 1000 triples")
         print(f"   Unique subjects: {store.get_statistics()['unique_subjects']}")
         print(f"   Unique predicates: {store.get_statistics()['unique_predicates']}")
 
@@ -93,7 +94,7 @@ def test_indexing():
             speedup = avg_time_query / avg_time
             print(f"   ✓ Indexing is {speedup:.2f}x faster")
         else:
-            print(f"   ✗ Indexing is slower")
+            print("   ✗ Indexing is slower")
 
         # Test find_triples
         print("\n7. Testing find_triples() performance...")
@@ -104,7 +105,7 @@ def test_indexing():
         avg_time = elapsed / iterations
         print(f"   find_triples(): {avg_time:.4f}s per call")
 
-        print(f"\n✓ Indexing validation completed")
+        print("\n✓ Indexing validation completed")
 
     finally:
         import shutil

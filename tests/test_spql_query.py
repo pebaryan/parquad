@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Test SPARQL query functionality with ParquetTripleStore"""
 
-from rdflib import Graph, URIRef, Literal
-from parquad.store import ParquetTripleStore
 import os
+
+from rdflib import Graph, Literal, URIRef
+
+from parquad.store import ParquetTripleStore
 
 
 def test_basic_query():
@@ -43,7 +45,7 @@ def test_basic_query():
             "SELECT ?p ?o WHERE { ?person ?p ?o . FILTER(?person = <http://example.org/person/1>) }"
         )
 
-        print(f"Query executed successfully!")
+        print("Query executed successfully!")
         print(f"Number of results: {len(list(query_result))}")
 
         for row in query_result:
@@ -90,7 +92,7 @@ def test_select_all():
     try:
         query_result = graph.query("SELECT ?s ?p ?o WHERE { ?s ?p ?o }")
 
-        print(f"Query executed successfully!")
+        print("Query executed successfully!")
         print(f"Number of results: {len(list(query_result))}")
 
         for row in query_result:
@@ -137,7 +139,7 @@ def test_count_query():
     try:
         query_result = graph.query("SELECT (COUNT(?s) AS ?count) WHERE { ?s a ?type }")
 
-        print(f"Query executed successfully!")
+        print("Query executed successfully!")
 
         for row in query_result:
             print(f"  Count: {row}")

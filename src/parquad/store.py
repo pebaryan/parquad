@@ -1,12 +1,10 @@
-import pandas as pd
-import pyarrow.parquet as pq
-from rdflib import Graph, URIRef, Literal, RDF, RDFS
-from rdflib.namespace import FOAF, XSD
-from rdflib.store import Store
-from typing import List, Optional, Tuple, Union
+import logging
 import os
 from datetime import datetime
-import logging
+
+import pandas as pd
+from rdflib import Graph, Literal, URIRef
+from rdflib.store import Store
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -203,7 +201,7 @@ class ParquetTripleStore(Store):
         logger.info(f"Loaded {len(df)} triples from {filename}")
         return graph
 
-    def batch_store(self, graphs: List[Tuple[str, Graph]]) -> List[str]:
+    def batch_store(self, graphs: list[tuple[str, Graph]]) -> list[str]:
         """Store multiple graphs"""
         filenames = []
         for name, graph in graphs:
